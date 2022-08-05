@@ -1,4 +1,0 @@
-#!/bin/sh
-set -e
-
-go run --mod=vendor github.com/gypsydave5/ghissues-select/cmd/validate --commitFile=$1
