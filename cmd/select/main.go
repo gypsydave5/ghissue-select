@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gypsydave5/coauthor-select/src/lib"
+	"github.com/gypsydave5/ghissue-select/src/lib"
 	"github.com/manifoldco/promptui"
 	"log"
 	"os"
