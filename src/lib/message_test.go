@@ -3,7 +3,7 @@ package lib_test
 import (
 	"fmt"
 	"github.com/alecthomas/assert/v2"
-	"github.com/tamj0rd2/coauthor-select/src/lib"
+	"github.com/gypsydave5/ghissue-select/src/lib"
 	"testing"
 )
 

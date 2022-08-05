@@ -3,6 +3,5 @@
 package example
 
 import (
-	_ "github.com/tamj0rd2/coauthor-select/cmd/select"
-	_ "github.com/tamj0rd2/coauthor-select/cmd/validate"
+	_ "github.com/gypsydave5/ghissue-select/cmd/select"
 )

@@ -11,8 +11,8 @@ fi
 if [ -t 1 ];
 then
   # interactively select coauthors if we're in an interactive shell
-  go run --mod=vendor github.com/tamj0rd2/coauthor-select/cmd/select --commitFile=$1 < /dev/tty
+  go run --mod=vendor github.com/gypsydave5/ghissue-select/cmd/select --commitFile=$1 < /dev/tty
 else
   # otherwise, try to select coauthors using pairs.json
-  go run --mod=vendor github.com/tamj0rd2/coauthor-select/cmd/select --commitFile=$1 --interactive=false
+  go run --mod=vendor github.com/gypsydave5/ghissue-select/cmd/select --commitFile=$1 --interactive=false
 fi

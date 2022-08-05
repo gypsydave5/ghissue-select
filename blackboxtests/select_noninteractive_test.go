@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/acarl005/stripansi"
 	"github.com/alecthomas/assert/v2"
-	"github.com/tamj0rd2/coauthor-select/src/lib"
+	"github.com/gypsydave5/ghissue-select/src/lib"
 	"os/exec"
 	"testing"
 )
