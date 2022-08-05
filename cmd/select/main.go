@@ -105,21 +105,28 @@ func getIssueNameInteractive() (lib.Issue, bool, error) {
 	var issue lib.Issue
 
 	validate := func(input string) error {
+		if input == "" {
+			return nil
+		}
 		_, err := strconv.Atoi(input)
 		if err != nil {
-			return errors.New("Invalid issue")
+			return errors.New("invalid issue")
 		}
 		return nil
 	}
 
 	issueSelection := promptui.Prompt{
-		Label:    "Which issue are you working on?",
+		Label:    "GitHub issue (default none):",
 		Validate: validate,
 	}
 
 	issueString, err := issueSelection.Run()
 	if err != nil {
 		return 0, false, fmt.Errorf("failed to input a valid issue - %w", err)
+	}
+
+	if issueString == "" {
+		return 0, false, nil
 	}
 
 	issue, err = strconv.Atoi(issueString)

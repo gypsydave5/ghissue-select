@@ -19,7 +19,7 @@ func Test_InteractiveSelectHook_WhenSomeoneIs_WorkingAlone(t *testing.T) {
 	)
 	givenThereIsACommitMessageFile(t, commitMessage)
 
-	_, err := runInteractiveSelectHook(t, []string{"No one else"})
+	_, err := runInteractiveSelectHook(t, []string{""})
 	assert.NoError(t, err)
 
 	expectedMessage := commitMessage
