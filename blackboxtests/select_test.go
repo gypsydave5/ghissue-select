@@ -87,7 +87,7 @@ func runInteractiveSelectHook(t *testing.T, textToSubmit []string) (string, erro
 	cmd := exec.Command(
 		"go", "run", "../cmd/select/...",
 		fmt.Sprintf("--commitFile=%s", commitFilePath),
-		fmt.Sprintf("--pairsFile=%s", issueFilePath),
+		fmt.Sprintf("--issueFile=%s", issueFilePath),
 		fmt.Sprintf("--forceSearchPrompts=%t", true),
 		fmt.Sprintf("--interactive=%t", true),
 	)

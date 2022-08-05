@@ -67,7 +67,7 @@ func runNonInteractiveSelectHook(t *testing.T) (string, error) {
 	cmd := exec.Command(
 		"go", "run", "../cmd/select/...",
 		fmt.Sprintf("--commitFile=%s", commitFilePath),
-		fmt.Sprintf("--pairsFile=%s", issueFilePath),
+		fmt.Sprintf("--issueFile=%s", issueFilePath),
 	)
 
 	b, err := cmd.CombinedOutput()

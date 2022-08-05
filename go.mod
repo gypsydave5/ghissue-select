@@ -7,7 +7,6 @@ require (
 	github.com/alecthomas/assert/v2 v2.0.2
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mattn/go-isatty v0.0.14
-	github.com/gypsydave5/ghissue-select v0.2.0
 )
 
 require (
