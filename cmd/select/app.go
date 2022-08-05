@@ -50,8 +50,6 @@ func (c CLIApp) Run(ctx context.Context) error {
 		return fmt.Errorf("failed to save issue: %w", err)
 	}
 
-	fmt.Println(issue)
-
 	commitMessage, err := c.formatCommitMessage(issue)
 	if err != nil {
 		return fmt.Errorf("failed to format commit message: %w", err)
