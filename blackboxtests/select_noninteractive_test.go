@@ -14,19 +14,17 @@ func Test_NonInteractiveSelectHook_WhenSomeoneIs_WorkingAlone(t *testing.T) {
 
 	var (
 		commitMessage = "feat-376 Did some work"
-		authors       = lib.CoAuthors{tam, pete}
-		pairs         = lib.CoAuthors{}
+		issue         = 123
 	)
 	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnAuthorsFile(t, authors)
-	givenThereIsAPairsFile(t, pairs.Names())
+	givenThereIsAnIssueFile(t, issue)
 
 	_, err := runNonInteractiveSelectHook(t)
 	assert.NoError(t, err)
 
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, pairs)
+	expectedMessage := lib.PrepareCommitMessage(commitMessage, issue)
 	assertCommitMessageFileHasContents(t, expectedMessage)
-	assertPairsFileHasEqualPairs(t, pairs)
+	assertIssueFileHasIssueEqualTo(t, issue)
 }
 
 func Test_NonInteractiveSelectHook_WhenSomeoneIs_WorkingAlone_AndThereIsNoPairsFile(t *testing.T) {
@@ -34,19 +32,16 @@ func Test_NonInteractiveSelectHook_WhenSomeoneIs_WorkingAlone_AndThereIsNoPairsF
 
 	var (
 		commitMessage = "feat-376 Did some work"
-		authors       = lib.CoAuthors{tam, pete}
-		pairs         = lib.CoAuthors{}
 	)
 	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnAuthorsFile(t, authors)
 	givenThereIsNotAPairsFile()
 
 	_, err := runNonInteractiveSelectHook(t)
 	assert.NoError(t, err)
 
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, pairs)
+	expectedMessage := commitMessage
 	assertCommitMessageFileHasContents(t, expectedMessage)
-	assertPairsFileHasEqualPairs(t, pairs)
+	assertNoIssueFile(t)
 }
 
 func Test_NonInteractiveSelectHook_WhenSomeoneIs_Pairing_WithASinglePerson(t *testing.T) {
@@ -54,74 +49,17 @@ func Test_NonInteractiveSelectHook_WhenSomeoneIs_Pairing_WithASinglePerson(t *te
 
 	var (
 		commitMessage = "feat-376 Did some work"
-		authors       = lib.CoAuthors{tam, pete}
-		pairs         = lib.CoAuthors{tam}
+		issue         = 123
 	)
 	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnAuthorsFile(t, authors)
-	givenThereIsAPairsFile(t, pairs.Names())
+	givenThereIsAnIssueFile(t, issue)
 
 	_, err := runNonInteractiveSelectHook(t)
 	assert.NoError(t, err)
 
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, pairs)
+	expectedMessage := lib.PrepareCommitMessage(commitMessage, issue)
 	assertCommitMessageFileHasContents(t, expectedMessage)
-	assertPairsFileHasEqualPairs(t, pairs)
-}
-
-func Test_NonInteractiveSelectHook_WhenSomeoneIs_Pairing_WithMultiplePeople(t *testing.T) {
-	t.Cleanup(cleanup)
-
-	var (
-		commitMessage = "feat-376 Did some work"
-		authors       = lib.CoAuthors{tam, pete}
-		pairs         = lib.CoAuthors{tam, pete}
-	)
-	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnAuthorsFile(t, authors)
-	givenThereIsAPairsFile(t, pairs.Names())
-
-	_, err := runNonInteractiveSelectHook(t)
-	assert.NoError(t, err)
-
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, pairs)
-	assertCommitMessageFileHasContents(t, expectedMessage)
-	assertPairsFileHasEqualPairs(t, pairs)
-}
-
-func Test_NonInteractiveSelectHook_WhenSomeoneIs_Pairing_WithSomeoneWhoIsAlreadyListedAsACoAuthor(t *testing.T) {
-	t.Cleanup(cleanup)
-
-	var (
-		commitMessage = "feat-376 Did some work\n" + pete.String()
-		authors       = lib.CoAuthors{tam, pete}
-		pairs         = lib.CoAuthors{tam}
-	)
-	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnAuthorsFile(t, authors)
-	givenThereIsAPairsFile(t, pairs.Names())
-
-	_, err := runNonInteractiveSelectHook(t)
-	assert.NoError(t, err)
-	assertCommitMessageFileContainsContents(t, pete.String())
-	assertCommitMessageFileContainsContents(t, tam.String())
-}
-
-func Test_NonInteractiveSelectHook_WhenSomeoneIs_Pairing_WithSomeoneWhoIsUnspecifiedInTheAuthorsFile(t *testing.T) {
-	t.Cleanup(cleanup)
-
-	var (
-		commitMessage = "feat-376 Did some work\n" + pete.String()
-		authors       = lib.CoAuthors{tam}
-		pairs         = lib.CoAuthors{pete}
-	)
-	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnAuthorsFile(t, authors)
-	givenThereIsAPairsFile(t, pairs.Names())
-
-	output, err := runNonInteractiveSelectHook(t)
-	assert.Error(t, err)
-	assert.Contains(t, output, `author "Pete" is not specified in the authors file`)
+	assertIssueFileHasIssueEqualTo(t, issue)
 }
 
 func runNonInteractiveSelectHook(t *testing.T) (string, error) {
@@ -129,8 +67,7 @@ func runNonInteractiveSelectHook(t *testing.T) (string, error) {
 	cmd := exec.Command(
 		"go", "run", "../cmd/select/...",
 		fmt.Sprintf("--commitFile=%s", commitFilePath),
-		fmt.Sprintf("--authorsFile=%s", authorsFilePath),
-		fmt.Sprintf("--pairsFile=%s", pairsFilePath),
+		fmt.Sprintf("--pairsFile=%s", issueFilePath),
 	)
 
 	b, err := cmd.CombinedOutput()

@@ -9,7 +9,7 @@ import (
 type selectOptions struct {
 	CommitFilePath     string
 	AuthorsFilePath    string
-	PairsFilePath      string
+	issueFilePath      string
 	ForceSearchPrompts bool
 	Interactive        bool
 }
@@ -21,9 +21,8 @@ func parseOptions() selectOptions {
 		}
 	)
 
-	flag.StringVar(&options.AuthorsFilePath, "authorsFile", ".coauthors", "names & emails of teammates")
 	flag.StringVar(&options.CommitFilePath, "commitFile", ".git/COMMIT_EDITMSG", "path to commit message file")
-	flag.StringVar(&options.PairsFilePath, "pairsFile", "pairs.json", "path to pairs file")
+	flag.StringVar(&options.issueFilePath, "issueFile", ".ghissue", "path to file with the last GitHub issue")
 	flag.BoolVar(&options.ForceSearchPrompts, "forceSearchPrompts", false, "makes all prompts searches for ease of testing")
 	flag.BoolVar(&options.Interactive, "interactive", options.Interactive, "whether you're using an interactive terminal")
 	flag.Parse()

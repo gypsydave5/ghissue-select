@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/gypsydave5/coauthor-select/src/lib"
 	"github.com/manifoldco/promptui"
-	"github.com/tamj0rd2/coauthor-select/src/lib"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -17,35 +19,31 @@ func main() {
 	options := parseOptions()
 
 	cliApp := NewCLIApp(
-		func(ctx context.Context) (lib.CoAuthors, error) {
-			authors, err := readAuthorsFile(options.AuthorsFilePath)
-			if err != nil {
-				return nil, err
-			}
+		func(ctx context.Context) (lib.Issue, bool, error) {
 
 			if !options.Interactive {
-				return getCoAuthorsNonInteractive(options.PairsFilePath, authors)
+				return getIssueNonInteractive(options.issueFilePath)
 			}
 
-			return getCoAuthorsInteractive(options, authors)
+			return getIssueInteractive(options)
 		},
-		func(ctx context.Context, pairs lib.CoAuthors) error {
-			b, err := json.Marshal(pairs.Names())
+		func(ctx context.Context, issue lib.Issue) error {
+			b, err := json.Marshal(issue)
 			if err != nil {
-				return fmt.Errorf("failed to marshal pairs - %w", err)
+				return fmt.Errorf("failed to marshal issue - %w", err)
 			}
 
-			if err := os.WriteFile(options.PairsFilePath, b, 0644); err != nil {
-				return fmt.Errorf("failed to write pairs file - %w", err)
+			if err := os.WriteFile(options.issueFilePath, b, 0644); err != nil {
+				return fmt.Errorf("failed to write issue file - %w", err)
 			}
 			return nil
 		},
-		func(authors lib.CoAuthors) (string, error) {
+		func(issue lib.Issue) (string, error) {
 			file, err := os.ReadFile(options.CommitFilePath)
 			if err != nil {
 				return "", fmt.Errorf("failed to read commit message file: %w", err)
 			}
-			return lib.PrepareCommitMessage(string(file), authors), nil
+			return lib.PrepareCommitMessage(string(file), issue), nil
 		},
 		func(ctx context.Context, message string) error {
 			if err := os.WriteFile(options.CommitFilePath, []byte(message), 0644); err != nil {
@@ -60,77 +58,76 @@ func main() {
 	}
 }
 
-func getCoAuthorsInteractive(options selectOptions, authors lib.CoAuthors) ([]lib.CoAuthor, error) {
-	previousPairs, wantsToUsePreviousPairs, err := getPreviousPairsInteractive(options)
+func getIssueInteractive(options selectOptions) (lib.Issue, bool, error) {
+	previousIssue, wantsToUsePreviousIssue, err := getPreviousIssueInteractive(options)
 	if err != nil {
-		return nil, err
+		return 0, false, err
 	}
 
-	if wantsToUsePreviousPairs {
-		return authors.Subset(previousPairs), nil
+	if wantsToUsePreviousIssue {
+		return previousIssue, true, nil
 	}
 
-	selectedPairs, err := getPairNamesInteractive(authors.Names())
+	issue, ok, err := getIssueNameInteractive()
 	if err != nil {
-		return nil, err
+		return 0, false, err
 	}
-	return authors.Subset(selectedPairs), nil
+	return issue, ok, nil
 }
 
-func getPreviousPairsInteractive(options selectOptions) ([]string, bool, error) {
-	var pairs []string
-	pairFile, err := os.ReadFile(options.PairsFilePath)
+func getPreviousIssueInteractive(options selectOptions) (lib.Issue, bool, error) {
+	var issue lib.Issue
+	issueFile, err := os.ReadFile(options.issueFilePath)
 	if err != nil {
-		return nil, false, nil
+		return 0, false, nil
 	}
 
-	if err = json.NewDecoder(bytes.NewReader(pairFile)).Decode(&pairs); err != nil {
-		return nil, false, fmt.Errorf("failed to decode pairs file %q - %w", options.PairsFilePath, err)
-	}
-
-	if len(pairs) == 0 {
-		return nil, false, nil
+	if err = json.NewDecoder(bytes.NewReader(issueFile)).Decode(&issue); err != nil {
+		return 0, false, fmt.Errorf("failed to decode issue file %q - %w", options.issueFilePath, err)
 	}
 
 	yesOrNo := []string{"Yes", "No"}
 	prompt := promptui.Select{
-		Label:             fmt.Sprintf("Are you still working with these exact people? [%s]", strings.Join(pairs, ", ")),
+		Label:             fmt.Sprintf("Are you still working with this issue exact people? [%d]", issue),
 		Items:             []string{"Yes", "No"},
 		StartInSearchMode: options.ForceSearchPrompts,
 		Searcher:          newSearcher(yesOrNo),
 	}
 	_, result, err := prompt.Run()
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to figure out if you're still pairing with the same people: %w", err)
+		return 0, false, fmt.Errorf("failed to figure out if you're still working on the last issue: %w", err)
 	}
 
-	return pairs, result == "Yes", nil
+	return issue, result == "Yes", nil
 }
 
-func getPairNamesInteractive(authorNames []string) ([]string, error) {
-	const noOneElse = "No one else"
-	authorNamesToChooseFrom := append([]string{noOneElse}, authorNames...)
-	var selectedPairs []string
+func getIssueNameInteractive() (lib.Issue, bool, error) {
+	var issue lib.Issue
 
-	for {
-		pairSelection := promptui.Select{
-			Label:             "Who else are you working with?",
-			Items:             authorNamesToChooseFrom,
-			StartInSearchMode: true,
-			Searcher:          newSearcher(authorNamesToChooseFrom),
-		}
-
-		_, pairName, err := pairSelection.Run()
+	validate := func(input string) error {
+		_, err := strconv.Atoi(input)
 		if err != nil {
-			return nil, fmt.Errorf("failed to select pair - %w", err)
+			return errors.New("Invalid issue")
 		}
-
-		if pairName == noOneElse {
-			return selectedPairs, nil
-		}
-
-		selectedPairs = append(selectedPairs, pairName)
+		return nil
 	}
+
+	issueSelection := promptui.Prompt{
+		Label:    "Which issue are you working on?",
+		Validate: validate,
+	}
+
+	issueString, err := issueSelection.Run()
+	if err != nil {
+		return 0, false, fmt.Errorf("failed to input a valid issue - %w", err)
+	}
+
+	issue, err = strconv.Atoi(issueString)
+	if err != nil {
+		return 0, false, fmt.Errorf("failed to input a valid issue - %w", err)
+	}
+
+	return issue, true, nil
 }
 
 func newSearcher(items []string) func(input string, index int) bool {
@@ -140,39 +137,12 @@ func newSearcher(items []string) func(input string, index int) bool {
 	}
 }
 
-func getCoAuthorsNonInteractive(pairsFilePath string, authors lib.CoAuthors) ([]lib.CoAuthor, error) {
-	pairNames, err := readJSON[[]string](pairsFilePath)
+func getIssueNonInteractive(issueFilePath string) (lib.Issue, bool, error) {
+	issue, err := readJSON[int](issueFilePath)
 	if err != nil {
-		if !strings.HasPrefix(err.Error(), "failed to read file") {
-			return nil, err
-		}
+		return 0, false, nil
 	}
-
-	var coAuthors []lib.CoAuthor
-	for _, name := range pairNames {
-		author, err := authors.Get(name)
-		if err != nil {
-			return nil, err
-		}
-
-		coAuthors = append(coAuthors, author)
-	}
-
-	return coAuthors, nil
-}
-
-func readAuthorsFile(filePath string) (lib.CoAuthors, error) {
-	b, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read authors file %q - %w", filePath, err)
-	}
-
-	var authors lib.CoAuthors
-	if err := authors.From(b); err != nil {
-		return nil, fmt.Errorf("failed to parse authors file %q - %w", filePath, err)
-	}
-
-	return authors, nil
+	return issue, true, err
 }
 
 func readJSON[T any](filePath string) (T, error) {

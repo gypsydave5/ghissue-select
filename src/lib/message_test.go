@@ -7,39 +7,34 @@ import (
 	"testing"
 )
 
-var (
-	tam    = lib.CoAuthor{Name: "tam", Email: "t@am.com"}
-	john   = lib.CoAuthor{Name: "John Doe", Email: "john@doe.com"}
-	mary   = lib.CoAuthor{Name: "Mary Sue", Email: "m.sue@example.com"}
-	rizzle = lib.CoAuthor{Name: "rizzle", Email: "rizzle@kicks.co"}
-)
-
-func TestAddingCoAuthorsToPlainMessage(t *testing.T) {
+func TestAddingGitIssueToPlainMessage(t *testing.T) {
 	commitMessage := "Hello world :D"
-	coAuthors := []lib.CoAuthor{tam, john}
+	issue := 123
 
-	expectedMessage := fmt.Sprintf("Hello world :D\n\n%s\n%s", tam, john)
+	expectedMessage := fmt.Sprintf("Hello world :D\n\n#%d", issue)
 
-	preparedMessage := lib.PrepareCommitMessage(commitMessage, coAuthors)
+	preparedMessage := lib.PrepareCommitMessage(commitMessage, issue)
 	assert.Equal(t, expectedMessage, preparedMessage)
 }
 
-func TestDoesNotAddCoauthorThatAlreadyExists(t *testing.T) {
-	commitMessage := "Hello world :D\n\n" + john.String()
-	coAuthors := []lib.CoAuthor{tam, john, rizzle}
+//
+func TestDoesNotAddGitIssueThatAlreadyExists(t *testing.T) {
+	commitMessage := "Hello world :D\n#123"
+	issue := 123
 
-	expectedMessage := fmt.Sprintf("%s\n\n%s\n%s", commitMessage, tam, rizzle)
+	expectedMessage := commitMessage + "\n"
 
-	preparedMessage := lib.PrepareCommitMessage(commitMessage, coAuthors)
+	preparedMessage := lib.PrepareCommitMessage(commitMessage, issue)
 	assert.Equal(t, expectedMessage, preparedMessage)
 }
 
+//
 func TestAddingCoAuthorsToTemplatedMessage(t *testing.T) {
 	inputMessage := "Hello world :D" + lib.COMMIT_SEPARATOR + "\nother stuff"
-	coAuthors := []lib.CoAuthor{tam, john}
+	issue := 123
 
-	expectedMessage := fmt.Sprintf("Hello world :D\n\n%s\n%s%s\nother stuff", tam, john, lib.COMMIT_SEPARATOR)
+	expectedMessage := fmt.Sprintf("Hello world :D\n\n#%d%s\nother stuff", issue, lib.COMMIT_SEPARATOR)
 
-	actualMessage := lib.PrepareCommitMessage(inputMessage, coAuthors)
+	actualMessage := lib.PrepareCommitMessage(inputMessage, issue)
 	assert.Equal(t, expectedMessage, actualMessage)
 }

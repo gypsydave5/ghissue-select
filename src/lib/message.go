@@ -3,24 +3,21 @@ package lib
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
+type Issue = int
+
 const COMMIT_SEPARATOR = "\n# ------------------------ >8 ------------------------"
 
-func PrepareCommitMessage(input string, coAuthors []CoAuthor) string {
-	if len(coAuthors) == 0 {
-		return input
-	}
-
+func PrepareCommitMessage(input string, issue int) string {
 	sections := strings.SplitN(input, COMMIT_SEPARATOR, 2)
 	message := sections[0] + "\n"
+	issueString := "#" + strconv.Itoa(issue)
 
-	for _, coAuthor := range coAuthors {
-		coauthorLine := coAuthor.String()
-		if !strings.Contains(message, coauthorLine) {
-			message += "\n" + coAuthor.String()
-		}
+	if !strings.Contains(message, issueString) {
+		message += "\n" + issueString
 	}
 
 	if len(sections) > 1 {

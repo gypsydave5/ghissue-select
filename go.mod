@@ -1,4 +1,4 @@
-module github.com/tamj0rd2/coauthor-select
+module github.com/gypsydave5/ghissue-select
 
 go 1.18
 
@@ -7,6 +7,7 @@ require (
 	github.com/alecthomas/assert/v2 v2.0.2
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mattn/go-isatty v0.0.14
+	github.com/tamj0rd2/coauthor-select v0.2.0
 )
 
 require (

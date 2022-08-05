@@ -3,54 +3,56 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/tamj0rd2/coauthor-select/src/lib"
+	"github.com/gypsydave5/ghissue-select/src/lib"
 )
 
-type GetPairs func(ctx context.Context) (lib.CoAuthors, error)
+type GetIssue func(ctx context.Context) (lib.Issue, bool, error)
 
-type SavePairs func(ctx context.Context, pairs lib.CoAuthors) error
+type SaveIssue func(ctx context.Context, pairs lib.Issue) error
 
-type FormatCommitMessage func(authors lib.CoAuthors) (string, error)
+type FormatCommitMessage func(authors lib.Issue) (string, error)
 
 type SaveCommitMessage func(ctx context.Context, message string) error
 
 type CLIApp struct {
-	getPairs            GetPairs
-	savePairs           SavePairs
+	getIssue            GetIssue
+	saveIssue           SaveIssue
 	formatCommitMessage FormatCommitMessage
 	saveCommitMessage   SaveCommitMessage
 }
 
 func NewCLIApp(
-	getPairs GetPairs,
-	savePairs SavePairs,
+	getIssue GetIssue,
+	saveIssue SaveIssue,
 	formatCommitMessage FormatCommitMessage,
 	saveCommitMessage SaveCommitMessage,
 ) *CLIApp {
 	return &CLIApp{
-		getPairs:            getPairs,
-		savePairs:           savePairs,
+		getIssue:            getIssue,
+		saveIssue:           saveIssue,
 		formatCommitMessage: formatCommitMessage,
 		saveCommitMessage:   saveCommitMessage,
 	}
 }
 
 func (c CLIApp) Run(ctx context.Context) error {
-	pairs, err := c.getPairs(ctx)
+	issue, ok, err := c.getIssue(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to get pairs: %w", err)
+		return fmt.Errorf("failed to get issue: %w", err)
 	}
 
-	if err := c.savePairs(ctx, pairs); err != nil {
-		// it's really not the end of the world. No need to kill the program.
-		return fmt.Errorf("failed to save pairs: %w", err)
-	}
-
-	if !pairs.Any() {
+	if !ok {
 		return nil
 	}
 
-	commitMessage, err := c.formatCommitMessage(pairs)
+	if err := c.saveIssue(ctx, issue); err != nil {
+		// it's really not the end of the world. No need to kill the program.
+		return fmt.Errorf("failed to save issue: %w", err)
+	}
+
+	fmt.Println(issue)
+
+	commitMessage, err := c.formatCommitMessage(issue)
 	if err != nil {
 		return fmt.Errorf("failed to format commit message: %w", err)
 	}
@@ -59,6 +61,6 @@ func (c CLIApp) Run(ctx context.Context) error {
 		return fmt.Errorf("failed to save commit message: %w", err)
 	}
 
-	fmt.Println("Added co-authors:", pairs)
+	fmt.Println("Added issue:", issue)
 	return nil
 }

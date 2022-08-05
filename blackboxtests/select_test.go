@@ -16,18 +16,15 @@ func Test_InteractiveSelectHook_WhenSomeoneIs_WorkingAlone(t *testing.T) {
 
 	var (
 		commitMessage = "feat-376 Did some work"
-		authors       = lib.CoAuthors{tam, pete}
-		expectedPairs = lib.CoAuthors{}
 	)
 	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnAuthorsFile(t, authors)
 
 	_, err := runInteractiveSelectHook(t, []string{"No one else"})
 	assert.NoError(t, err)
 
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, expectedPairs)
+	expectedMessage := commitMessage
 	assertCommitMessageFileHasContents(t, expectedMessage)
-	assertPairsFileHasEqualPairs(t, expectedPairs)
+	assertNoIssueFile(t)
 }
 
 func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_ForTheFirstTime_WithASinglePerson(t *testing.T) {
@@ -35,39 +32,17 @@ func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_ForTheFirstTime_WithASingl
 
 	var (
 		commitMessage = "feat-376 Did some work"
-		authors       = lib.CoAuthors{tam, pete}
-		expectedPairs = lib.CoAuthors{tam}
+		issue         = 123
 	)
 	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnAuthorsFile(t, authors)
 	givenThereIsNotAPairsFile()
 
-	_, err := runInteractiveSelectHook(t, []string{"Tam", "No one else"})
+	_, err := runInteractiveSelectHook(t, []string{"123"})
 	assert.NoError(t, err)
 
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, expectedPairs)
+	expectedMessage := lib.PrepareCommitMessage(commitMessage, issue)
 	assertCommitMessageFileHasContents(t, expectedMessage)
-	assertPairsFileHasEqualPairs(t, expectedPairs)
-}
-
-func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_ForTheFirstTime_WithMultiplePeople(t *testing.T) {
-	t.Cleanup(cleanup)
-
-	var (
-		commitMessage = "feat-376 Did some work"
-		authors       = lib.CoAuthors{tam, pete}
-		expectedPairs = lib.CoAuthors{tam, pete}
-	)
-	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnAuthorsFile(t, authors)
-	givenThereIsNotAPairsFile()
-
-	_, err := runInteractiveSelectHook(t, []string{"Tam", "Pete", "No one else"})
-	assert.NoError(t, err)
-
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, expectedPairs)
-	assertCommitMessageFileHasContents(t, expectedMessage)
-	assertPairsFileHasEqualPairs(t, expectedPairs)
+	assertIssueFileHasIssueEqualTo(t, issue)
 }
 
 func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_WithTheSamePersonAsLastTime(t *testing.T) {
@@ -75,19 +50,17 @@ func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_WithTheSamePersonAsLastTim
 
 	var (
 		commitMessage = "feat-376 Did some work"
-		authors       = lib.CoAuthors{tam, pete}
-		expectedPairs = lib.CoAuthors{pete}
+		issue         = 123
 	)
 	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnAuthorsFile(t, authors)
-	givenThereIsAPairsFile(t, expectedPairs.Names())
+	givenThereIsAnIssueFile(t, issue)
 
 	_, err := runInteractiveSelectHook(t, []string{"Yes"})
 	assert.NoError(t, err)
 
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, expectedPairs)
+	expectedMessage := lib.PrepareCommitMessage(commitMessage, issue)
 	assertCommitMessageFileHasContents(t, expectedMessage)
-	assertPairsFileHasEqualPairs(t, expectedPairs)
+	assertIssueFileHasIssueEqualTo(t, issue)
 }
 
 func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_WithDifferentPeopleThanLastTime(t *testing.T) {
@@ -95,41 +68,18 @@ func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_WithDifferentPeopleThanLas
 
 	var (
 		commitMessage = "feat-376 Did some work"
-		authors       = lib.CoAuthors{tam, pete}
-		previousPairs = lib.CoAuthors{pete}
-		expectedPairs = lib.CoAuthors{tam}
+		previousIssue = 123
+		expectedIssue = 456
 	)
 	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnAuthorsFile(t, authors)
-	givenThereIsAPairsFile(t, previousPairs.Names())
+	givenThereIsAnIssueFile(t, previousIssue)
 
-	_, err := runInteractiveSelectHook(t, []string{"No", "Tam", "No one else"})
+	_, err := runInteractiveSelectHook(t, []string{"No", "456", "No one else"})
 	assert.NoError(t, err)
 
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, expectedPairs)
+	expectedMessage := lib.PrepareCommitMessage(commitMessage, expectedIssue)
 	assertCommitMessageFileHasContents(t, expectedMessage)
-	assertPairsFileHasEqualPairs(t, expectedPairs)
-}
-
-func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_ButWasWorkingAloneLastTime(t *testing.T) {
-	t.Cleanup(cleanup)
-
-	var (
-		commitMessage = "feat-376 Did some work"
-		authors       = lib.CoAuthors{tam, pete}
-		previousPairs = lib.CoAuthors{}
-		expectedPairs = lib.CoAuthors{tam}
-	)
-	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnAuthorsFile(t, authors)
-	givenThereIsAPairsFile(t, previousPairs.Names())
-
-	_, err := runInteractiveSelectHook(t, []string{"Tam", "No one else"})
-	assert.NoError(t, err)
-
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, expectedPairs)
-	assertCommitMessageFileHasContents(t, expectedMessage)
-	assertPairsFileHasEqualPairs(t, expectedPairs)
+	assertIssueFileHasIssueEqualTo(t, expectedIssue)
 }
 
 func runInteractiveSelectHook(t *testing.T, textToSubmit []string) (string, error) {
@@ -137,8 +87,7 @@ func runInteractiveSelectHook(t *testing.T, textToSubmit []string) (string, erro
 	cmd := exec.Command(
 		"go", "run", "../cmd/select/...",
 		fmt.Sprintf("--commitFile=%s", commitFilePath),
-		fmt.Sprintf("--authorsFile=%s", authorsFilePath),
-		fmt.Sprintf("--pairsFile=%s", pairsFilePath),
+		fmt.Sprintf("--pairsFile=%s", issueFilePath),
 		fmt.Sprintf("--forceSearchPrompts=%t", true),
 		fmt.Sprintf("--interactive=%t", true),
 	)
