@@ -88,7 +88,7 @@ func getPreviousIssueInteractive(options selectOptions) (lib.Issue, bool, error)
 
 	yesOrNo := []string{"Yes", "No"}
 	prompt := promptui.Select{
-		Label:             fmt.Sprintf("Are you still working with this issue exact people? [%d]", issue),
+		Label:             fmt.Sprintf("Are you still working on this GitHub issue? [#%d]", issue),
 		Items:             []string{"Yes", "No"},
 		StartInSearchMode: options.ForceSearchPrompts,
 		Searcher:          newSearcher(yesOrNo),
@@ -116,7 +116,7 @@ func getIssueNameInteractive() (lib.Issue, bool, error) {
 	}
 
 	issueSelection := promptui.Prompt{
-		Label:    "GitHub issue (default none):",
+		Label:    "GitHub issue (default none)",
 		Validate: validate,
 	}
 
