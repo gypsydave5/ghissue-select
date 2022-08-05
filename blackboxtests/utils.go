@@ -32,7 +32,7 @@ func givenThereIsAnIssueFile(t *testing.T, issue int) {
 	assert.NoError(t, err, "could not write issue file")
 }
 
-func givenThereIsNotAPairsFile() {
+func givenThereIsNoIssueFile() {
 	_ = os.Remove(issueFilePath)
 }
 

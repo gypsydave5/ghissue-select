@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func Test_InteractiveSelectHook_WhenSomeoneIs_WorkingAlone(t *testing.T) {
+func Test_InteractiveSelectHook_NotWorkingOnAnIssue(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	var (
@@ -27,7 +27,7 @@ func Test_InteractiveSelectHook_WhenSomeoneIs_WorkingAlone(t *testing.T) {
 	assertNoIssueFile(t)
 }
 
-func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_ForTheFirstTime_WithASinglePerson(t *testing.T) {
+func Test_InteractiveSelectHook_StartingAnIssue(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	var (
@@ -35,7 +35,7 @@ func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_ForTheFirstTime_WithASingl
 		issue         = 123
 	)
 	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsNotAPairsFile()
+	givenThereIsNoIssueFile()
 
 	_, err := runInteractiveSelectHook(t, []string{"123"})
 	assert.NoError(t, err)
@@ -45,7 +45,7 @@ func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_ForTheFirstTime_WithASingl
 	assertIssueFileHasIssueEqualTo(t, issue)
 }
 
-func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_WithTheSamePersonAsLastTime(t *testing.T) {
+func Test_InteractiveSelectHook_StayingOnTheSameIssue(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	var (
@@ -63,7 +63,7 @@ func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_WithTheSamePersonAsLastTim
 	assertIssueFileHasIssueEqualTo(t, issue)
 }
 
-func Test_InteractiveSelectHook_WhenSomeoneIs_Pairing_WithDifferentPeopleThanLastTime(t *testing.T) {
+func Test_InteractiveSelectHook_ChangingTheIssue(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	var (

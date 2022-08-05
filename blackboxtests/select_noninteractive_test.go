@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func Test_NonInteractiveSelectHook_WhenSomeoneIs_WorkingAlone(t *testing.T) {
+func Test_NonInteractiveSelectHook_WorkingOnAnIssue(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	var (
@@ -27,14 +27,14 @@ func Test_NonInteractiveSelectHook_WhenSomeoneIs_WorkingAlone(t *testing.T) {
 	assertIssueFileHasIssueEqualTo(t, issue)
 }
 
-func Test_NonInteractiveSelectHook_WhenSomeoneIs_WorkingAlone_AndThereIsNoPairsFile(t *testing.T) {
+func Test_NonInteractiveSelectHook_NotWorkingOnAnIssue(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	var (
 		commitMessage = "feat-376 Did some work"
 	)
 	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsNotAPairsFile()
+	givenThereIsNoIssueFile()
 
 	_, err := runNonInteractiveSelectHook(t)
 	assert.NoError(t, err)
@@ -42,24 +42,6 @@ func Test_NonInteractiveSelectHook_WhenSomeoneIs_WorkingAlone_AndThereIsNoPairsF
 	expectedMessage := commitMessage
 	assertCommitMessageFileHasContents(t, expectedMessage)
 	assertNoIssueFile(t)
-}
-
-func Test_NonInteractiveSelectHook_WhenSomeoneIs_Pairing_WithASinglePerson(t *testing.T) {
-	t.Cleanup(cleanup)
-
-	var (
-		commitMessage = "feat-376 Did some work"
-		issue         = 123
-	)
-	givenThereIsACommitMessageFile(t, commitMessage)
-	givenThereIsAnIssueFile(t, issue)
-
-	_, err := runNonInteractiveSelectHook(t)
-	assert.NoError(t, err)
-
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, issue)
-	assertCommitMessageFileHasContents(t, expectedMessage)
-	assertIssueFileHasIssueEqualTo(t, issue)
 }
 
 func runNonInteractiveSelectHook(t *testing.T) (string, error) {
