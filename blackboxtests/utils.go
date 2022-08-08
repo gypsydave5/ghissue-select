@@ -3,7 +3,9 @@ package blackboxtests
 import (
 	"encoding/json"
 	"github.com/alecthomas/assert/v2"
-	_ "github.com/gypsydave5/ghissue-select/src/lib"
+	"github.com/gypsydave5/ghissue-select/src"
+	_ "github.com/gypsydave5/ghissue-select/src"
+	"github.com/gypsydave5/ghissue-select/src/github"
 
 	"os"
 	"testing"
@@ -20,6 +22,16 @@ func givenThereIsACommitMessageFile(t *testing.T, message string) {
 	t.Helper()
 	err := os.WriteFile(commitFilePath, []byte(message), 0666)
 	assert.NoError(t, err)
+}
+
+func givenThereIsAnIssueInGitHub(t *testing.T) src.Issue {
+	t.Helper()
+	repo := github.NewIssuesRepository()
+	issue := repo.CreateIssue()
+	return issue
+}
+
+func givenThatThereAreNoIssuesInGitHub(t *testing.T) {
 }
 
 func givenThereIsAnIssueFile(t *testing.T, issue int) {

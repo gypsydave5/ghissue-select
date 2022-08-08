@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/acarl005/stripansi"
 	"github.com/alecthomas/assert/v2"
-	"github.com/gypsydave5/ghissue-select/src/lib"
+	"github.com/gypsydave5/ghissue-select/src"
 	"io"
 	"os/exec"
 	"testing"
@@ -40,7 +40,7 @@ func Test_InteractiveSelectHook_StartingAnIssue(t *testing.T) {
 	_, err := runInteractiveSelectHook(t, []string{"123"})
 	assert.NoError(t, err)
 
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, issue)
+	expectedMessage := src.PrepareCommitMessage(commitMessage, issue)
 	assertCommitMessageFileHasContents(t, expectedMessage)
 	assertIssueFileHasIssueEqualTo(t, issue)
 }
@@ -58,7 +58,7 @@ func Test_InteractiveSelectHook_StayingOnTheSameIssue(t *testing.T) {
 	_, err := runInteractiveSelectHook(t, []string{"Yes"})
 	assert.NoError(t, err)
 
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, issue)
+	expectedMessage := src.PrepareCommitMessage(commitMessage, issue)
 	assertCommitMessageFileHasContents(t, expectedMessage)
 	assertIssueFileHasIssueEqualTo(t, issue)
 }
@@ -77,7 +77,7 @@ func Test_InteractiveSelectHook_ChangingTheIssue(t *testing.T) {
 	_, err := runInteractiveSelectHook(t, []string{"No", "456", "No one else"})
 	assert.NoError(t, err)
 
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, expectedIssue)
+	expectedMessage := src.PrepareCommitMessage(commitMessage, expectedIssue)
 	assertCommitMessageFileHasContents(t, expectedMessage)
 	assertIssueFileHasIssueEqualTo(t, expectedIssue)
 }

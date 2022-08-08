@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/acarl005/stripansi"
 	"github.com/alecthomas/assert/v2"
-	"github.com/gypsydave5/ghissue-select/src/lib"
+	"github.com/gypsydave5/ghissue-select/src"
 	"os/exec"
 	"testing"
 )
@@ -22,7 +22,7 @@ func Test_NonInteractiveSelectHook_WorkingOnAnIssue(t *testing.T) {
 	_, err := runNonInteractiveSelectHook(t)
 	assert.NoError(t, err)
 
-	expectedMessage := lib.PrepareCommitMessage(commitMessage, issue)
+	expectedMessage := src.PrepareCommitMessage(commitMessage, issue)
 	assertCommitMessageFileHasContents(t, expectedMessage)
 	assertIssueFileHasIssueEqualTo(t, issue)
 }

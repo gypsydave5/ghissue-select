@@ -3,14 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/gypsydave5/ghissue-select/src/lib"
+	"github.com/gypsydave5/ghissue-select/src"
 )
 
-type GetIssue func(ctx context.Context) (lib.Issue, bool, error)
+type GetIssue func(ctx context.Context) (src.Issue, bool, error)
 
-type SaveIssue func(ctx context.Context, pairs lib.Issue) error
+type SaveIssue func(ctx context.Context, pairs src.Issue) error
 
-type FormatCommitMessage func(authors lib.Issue) (string, error)
+type FormatCommitMessage func(authors src.Issue) (string, error)
 
 type SaveCommitMessage func(ctx context.Context, message string) error
 

@@ -1,9 +1,9 @@
-package lib_test
+package src_test
 
 import (
 	"fmt"
 	"github.com/alecthomas/assert/v2"
-	"github.com/gypsydave5/ghissue-select/src/lib"
+	"github.com/gypsydave5/ghissue-select/src"
 	"testing"
 )
 
@@ -13,7 +13,7 @@ func TestAddingGitIssueToPlainMessage(t *testing.T) {
 
 	expectedMessage := fmt.Sprintf("Hello world :D\n\n#%d", issue)
 
-	preparedMessage := lib.PrepareCommitMessage(commitMessage, issue)
+	preparedMessage := src.PrepareCommitMessage(commitMessage, issue)
 	assert.Equal(t, expectedMessage, preparedMessage)
 }
 
@@ -24,17 +24,17 @@ func TestDoesNotAddGitIssueThatAlreadyExists(t *testing.T) {
 
 	expectedMessage := commitMessage + "\n"
 
-	preparedMessage := lib.PrepareCommitMessage(commitMessage, issue)
+	preparedMessage := src.PrepareCommitMessage(commitMessage, issue)
 	assert.Equal(t, expectedMessage, preparedMessage)
 }
 
 //
 func TestAddingCoAuthorsToTemplatedMessage(t *testing.T) {
-	inputMessage := "Hello world :D" + lib.COMMIT_SEPARATOR + "\nother stuff"
+	inputMessage := "Hello world :D" + src.COMMIT_SEPARATOR + "\nother stuff"
 	issue := 123
 
-	expectedMessage := fmt.Sprintf("Hello world :D\n\n#%d%s\nother stuff", issue, lib.COMMIT_SEPARATOR)
+	expectedMessage := fmt.Sprintf("Hello world :D\n\n#%d%s\nother stuff", issue, src.COMMIT_SEPARATOR)
 
-	actualMessage := lib.PrepareCommitMessage(inputMessage, issue)
+	actualMessage := src.PrepareCommitMessage(inputMessage, issue)
 	assert.Equal(t, expectedMessage, actualMessage)
 }
