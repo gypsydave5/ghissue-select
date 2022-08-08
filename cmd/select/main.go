@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gypsydave5/ghissue-select/src"
-	"github.com/gypsydave5/ghissue-select/src/github"
 	"log"
 	"os"
 )
@@ -14,7 +13,7 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 	options := parseOptions()
 
-	i := newIssues(github.NewIssuesRepository(), options)
+	i := newIssues(options)
 
 	cliApp := NewCLIApp(
 		i.Get,

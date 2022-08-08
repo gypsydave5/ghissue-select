@@ -29,7 +29,7 @@ func TestDoesNotAddGitIssueThatAlreadyExists(t *testing.T) {
 }
 
 //
-func TestAddingCoAuthorsToTemplatedMessage(t *testing.T) {
+func TestAddingIssueToTemplatedMessage(t *testing.T) {
 	inputMessage := "Hello world :D" + src.COMMIT_SEPARATOR + "\nother stuff"
 	issue := 123
 

@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gypsydave5/ghissue-select/src"
-	"github.com/gypsydave5/ghissue-select/src/github"
 	"github.com/manifoldco/promptui"
 	"os"
 	"strconv"
@@ -15,12 +14,12 @@ import (
 )
 
 type issues struct {
-	repo    *github.IssuesRepository
+	repo    []src.Issue
 	options selectOptions
 }
 
-func newIssues(repo *github.IssuesRepository, options selectOptions) *issues {
-	return &issues{repo: repo, options: options}
+func newIssues(options selectOptions) *issues {
+	return &issues{repo: []src.Issue{}, options: options}
 }
 
 func (i issues) Get(ctx context.Context) (src.Issue, bool, error) {
