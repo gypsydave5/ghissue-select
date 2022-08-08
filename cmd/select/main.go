@@ -13,7 +13,7 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 	options := parseOptions()
 
-	i := newIssues(options)
+	i := newIssues(options, []src.Issue{})
 
 	cliApp := NewCLIApp(
 		i.Get,

@@ -13,24 +13,20 @@ import (
 	"strings"
 )
 
-type issues struct {
-	repo    []src.Issue
+type IssuesSelector struct {
+	issues  []src.Issue
 	options selectOptions
 }
 
-func newIssues(options selectOptions) *issues {
-	return &issues{repo: []src.Issue{}, options: options}
+func newIssues(options selectOptions, is []src.Issue) *IssuesSelector {
+	return &IssuesSelector{issues: is, options: options}
 }
 
-func (i issues) Get(ctx context.Context) (src.Issue, bool, error) {
-	if !i.options.Interactive {
-		return i.getIssueNonInteractive()
-	}
-
+func (i IssuesSelector) Get(ctx context.Context) (src.Issue, bool, error) {
 	return i.getIssueInteractive()
 }
 
-func (i issues) getIssueInteractive() (src.Issue, bool, error) {
+func (i IssuesSelector) getIssueInteractive() (src.Issue, bool, error) {
 	previousIssue, wantsToUsePreviousIssue, err := i.getPreviousIssueInteractive()
 	if err != nil {
 		return 0, false, err
@@ -47,7 +43,7 @@ func (i issues) getIssueInteractive() (src.Issue, bool, error) {
 	return issue, ok, nil
 }
 
-func (i issues) getPreviousIssueInteractive() (src.Issue, bool, error) {
+func (i IssuesSelector) getPreviousIssueInteractive() (src.Issue, bool, error) {
 	var issue src.Issue
 	issueFile, err := os.ReadFile(i.options.issueFilePath)
 	if err != nil {
@@ -73,7 +69,7 @@ func (i issues) getPreviousIssueInteractive() (src.Issue, bool, error) {
 	return issue, result == "Yes", nil
 }
 
-func (i issues) getIssueNameInteractive() (src.Issue, bool, error) {
+func (i IssuesSelector) getIssueNameInteractive() (src.Issue, bool, error) {
 	var issue src.Issue
 
 	validate := func(input string) error {
@@ -114,26 +110,4 @@ func newSearcher(items []string) func(input string, index int) bool {
 		name := strings.ToLower(items[index])
 		return strings.Contains(name, strings.ToLower(input))
 	}
-}
-
-func (i issues) getIssueNonInteractive() (src.Issue, bool, error) {
-	issue, err := readJSON[int](i.options.issueFilePath)
-	if err != nil {
-		return 0, false, nil
-	}
-	return issue, true, err
-}
-
-func readJSON[T any](filePath string) (T, error) {
-	var result T
-	b, err := os.ReadFile(filePath)
-	if err != nil {
-		return result, fmt.Errorf("failed to read file %q - %w", filePath, err)
-	}
-
-	if err := json.Unmarshal(b, &result); err != nil {
-		return result, fmt.Errorf("failed to unmarshal file %q - %w", filePath, err)
-	}
-
-	return result, nil
 }
