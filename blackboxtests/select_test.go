@@ -17,6 +17,7 @@ func Test_InteractiveSelectHook_NotWorkingOnAnIssue(t *testing.T) {
 	var (
 		commitMessage = "feat-376 Did some work"
 	)
+
 	givenThereIsACommitMessageFile(t, commitMessage)
 
 	_, err := runInteractiveSelectHook(t, []string{""})

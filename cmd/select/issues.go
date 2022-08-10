@@ -8,25 +8,33 @@ import (
 	"fmt"
 	"github.com/gypsydave5/ghissue-select/src"
 	"github.com/manifoldco/promptui"
+	"io"
 	"os"
 	"strconv"
 	"strings"
 )
 
-type IssuesSelector struct {
+type CLIIssuesSelector struct {
 	issues  []src.Issue
 	options selectOptions
+	stdin   io.ReadCloser
+	stdout  io.WriteCloser
 }
 
-func newIssues(options selectOptions, is []src.Issue) *IssuesSelector {
-	return &IssuesSelector{issues: is, options: options}
+func NewIssuesSelector(options selectOptions, issues []src.Issue, stdin io.ReadCloser, stdout io.WriteCloser) *CLIIssuesSelector {
+	return &CLIIssuesSelector{issues: issues, options: options, stdin: stdin, stdout: stdout}
 }
 
-func (i IssuesSelector) Get(ctx context.Context) (src.Issue, bool, error) {
+func (i CLIIssuesSelector) Get(ctx context.Context) (src.Issue, bool, error) {
+	if len(i.issues) == 0 {
+		i.stdin.Close()
+		i.stdout.Close()
+		return 0, false, nil
+	}
 	return i.getIssueInteractive()
 }
 
-func (i IssuesSelector) getIssueInteractive() (src.Issue, bool, error) {
+func (i CLIIssuesSelector) getIssueInteractive() (src.Issue, bool, error) {
 	previousIssue, wantsToUsePreviousIssue, err := i.getPreviousIssueInteractive()
 	if err != nil {
 		return 0, false, err
@@ -43,7 +51,7 @@ func (i IssuesSelector) getIssueInteractive() (src.Issue, bool, error) {
 	return issue, ok, nil
 }
 
-func (i IssuesSelector) getPreviousIssueInteractive() (src.Issue, bool, error) {
+func (i CLIIssuesSelector) getPreviousIssueInteractive() (src.Issue, bool, error) {
 	var issue src.Issue
 	issueFile, err := os.ReadFile(i.options.issueFilePath)
 	if err != nil {
@@ -60,6 +68,8 @@ func (i IssuesSelector) getPreviousIssueInteractive() (src.Issue, bool, error) {
 		Items:             []string{"Yes", "No"},
 		StartInSearchMode: i.options.ForceSearchPrompts,
 		Searcher:          newSearcher(yesOrNo),
+		Stdout:            i.stdout,
+		Stdin:             i.stdin,
 	}
 	_, result, err := prompt.Run()
 	if err != nil {
@@ -69,7 +79,7 @@ func (i IssuesSelector) getPreviousIssueInteractive() (src.Issue, bool, error) {
 	return issue, result == "Yes", nil
 }
 
-func (i IssuesSelector) getIssueNameInteractive() (src.Issue, bool, error) {
+func (i CLIIssuesSelector) getIssueNameInteractive() (src.Issue, bool, error) {
 	var issue src.Issue
 
 	validate := func(input string) error {
@@ -86,6 +96,8 @@ func (i IssuesSelector) getIssueNameInteractive() (src.Issue, bool, error) {
 	issueSelection := promptui.Prompt{
 		Label:    "GitHub issue (default none)",
 		Validate: validate,
+		Stdout:   i.stdout,
+		Stdin:    i.stdin,
 	}
 
 	issueString, err := issueSelection.Run()
